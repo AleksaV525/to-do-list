@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="sr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#171A21">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Plan">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+<title>Nedeljni plan</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: tab strip Pon–Ned on top, one day at a time below, a "Nedelja" view with all seven days as cards.
+   Idea: tasks are marked with a highlighter, so the one accent is marker yellow on ink. */
+:root {
+  --bg: #F1F2EE;
+  --surface: #FFFFFF;
+  --ink: #171A21;
+  --muted: #5C6370;
+  --line: #D8DBD3;
+  --hl: #F5D547;
+  --hl-ink: #171A21;
+  --hl-soft: #FBEFB0;
+  --danger: #B3261E;
+  --f-display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+  --f-body: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif;
+  --f-mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12141A;
+    --surface: #1B1E26;
+    --ink: #ECEEF2;
+    --muted: #9AA1AF;
+    --line: #2C303B;
+    --hl: #E9C93C;
+    --hl-ink: #14161B;
+    --hl-soft: #3A3516;
+    --danger: #F2867F;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12141A;
+  --surface: #1B1E26;
+  --ink: #ECEEF2;
+  --muted: #9AA1AF;
+  --line: #2C303B;
+  --hl: #E9C93C;
+  --hl-ink: #14161B;
+  --hl-soft: #3A3516;
+  --danger: #F2867F;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 16px/1.45 var(--f-body);
+  padding-block: 24px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+.app { max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+.mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+
+/* header */
+.top { display: flex; flex-direction: column; gap: 6px; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { margin: 0; font: 700 clamp(30px, 6vw, 44px)/1.05 var(--f-display); letter-spacing: -.01em; text-wrap: balance; }
+.overall { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; max-width: 720px; }
+.overall .row { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+.overall .count { font-weight: 600; }
+.meter { height: 10px; border-radius: 99px; background: var(--surface); border: 1px solid var(--line); overflow: hidden; }
+.meter > i { display: block; height: 100%; width: 0; background: var(--hl); transition: width .3s ease; }
+.hint { margin: 0; font-size: 14px; color: var(--muted); }
+
+/* controls */
+.controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+.seg { display: inline-flex; padding: 3px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); gap: 2px; }
+.seg button { border: 0; background: transparent; padding: 8px 16px; border-radius: 9px; font-weight: 600; font-size: 14px; min-height: 38px; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+.ghost { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 8px 14px; font-size: 14px; font-weight: 500; min-height: 38px; }
+.ghost[aria-pressed="true"] { background: var(--hl); border-color: var(--hl); color: var(--hl-ink); }
+.ghost.danger { border-color: var(--danger); color: var(--danger); }
+
+/* day tabs */
+.tabs { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.tab { position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 9px 0 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.tab .d { font-weight: 600; font-size: 14px; }
+.tab .c { font-family: var(--f-mono); font-size: 11px; color: var(--muted); padding: 0 4px; border-radius: 4px; }
+.tab[aria-selected="true"] { background: var(--ink); border-color: var(--ink); color: var(--surface); }
+.tab[aria-selected="true"] .c { color: inherit; opacity: .8; }
+.tab.today::after { content: ""; position: absolute; left: 28%; right: 28%; bottom: 4px; height: 3px; border-radius: 2px; background: var(--hl); }
+.tab.alldone .c { background: var(--hl); color: var(--hl-ink); opacity: 1; }
+.tab:focus-visible, .seg button:focus-visible, .ghost:focus-visible, .cardhead:focus-visible, .add button:focus-visible, .del:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+
+/* day view */
+.view { min-width: 0; }
+.panel { max-width: 720px; display: flex; flex-direction: column; gap: 14px; }
+.dayhead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.dayhead h2 { margin: 0; font: 700 26px/1.1 var(--f-display); }
+.dayhead .date { color: var(--muted); font-size: 13px; }
+.pill { font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 99px; background: var(--hl); color: var(--hl-ink); }
+.dayhead .ghost { margin-left: auto; }
+
+.tasks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.task label { position: relative; display: flex; align-items: center; gap: 12px; min-height: 54px; padding: 10px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; cursor: pointer; }
+.task input[type="checkbox"] { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.box { flex: none; width: 26px; height: 26px; border: 2px solid var(--ink); border-radius: 8px; display: grid; place-items: center; transition: background .15s, border-color .15s; }
+.box svg { width: 16px; height: 16px; opacity: 0; stroke: var(--hl-ink); transition: opacity .12s; }
+.task input:checked + .box { background: var(--hl); border-color: var(--hl); }
+.task input:checked + .box svg { opacity: 1; }
+.task input:focus-visible + .box { outline: 3px solid var(--ink); outline-offset: 2px; }
+.txt { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.task.done .txt { color: var(--muted); text-decoration: line-through; background: linear-gradient(transparent 58%, var(--hl-soft) 58%); }
+.tag { flex: none; font-family: var(--f-mono); font-size: 11px; color: var(--muted); border: 1px dashed var(--line); border-radius: 6px; padding: 1px 6px; }
+.empty { margin: 0; padding: 14px; border: 1px dashed var(--line); border-radius: 12px; color: var(--muted); font-size: 15px; }
+
+.task.edit { display: flex; gap: 8px; }
+.task.edit .rename { flex: 1; min-width: 0; min-height: 48px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.del { flex: none; width: 48px; min-height: 48px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); display: grid; place-items: center; color: var(--danger); }
+.del svg { width: 18px; height: 18px; stroke: currentColor; }
+
+/* add form */
+.add { max-width: 720px; display: flex; flex-direction: column; gap: 10px; }
+.add .line { display: flex; flex-wrap: wrap; gap: 8px; }
+.add input[type="text"] { flex: 1 1 220px; min-width: 0; min-height: 48px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.add button { min-height: 48px; padding: 10px 20px; border: 0; border-radius: 12px; background: var(--ink); color: var(--surface); font-weight: 600; }
+.add .once { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); }
+.add .once input { width: 18px; height: 18px; accent-color: var(--ink); }
+input[type="text"]:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+
+/* week view */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 14px; align-items: start; }
+.card { min-width: 0; display: flex; flex-direction: column; gap: 10px; padding: 12px; border: 1px solid var(--line); border-radius: 16px; background: var(--bg); }
+.card.today { border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink); }
+.cardhead { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; border: 0; background: transparent; padding: 2px 2px 0; text-align: left; border-radius: 8px; }
+.cardhead .cn { font: 700 19px/1.2 var(--f-display); }
+.cardhead .mono { font-size: 12px; color: var(--muted); }
+.card .task label { min-height: 42px; padding: 6px 10px; gap: 10px; font-size: 15px; }
+.card .box { width: 22px; height: 22px; border-radius: 7px; }
+.card .box svg { width: 14px; height: 14px; }
+
+/* footer */
+footer { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; padding-top: 14px; border-top: 1px solid var(--line); }
+.syncline { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); min-width: 0; }
+.dot { flex: none; width: 9px; height: 9px; border-radius: 50%; background: var(--muted); }
+.dot.ok { background: var(--hl); box-shadow: 0 0 0 1px var(--ink); }
+.dot.err { background: var(--danger); }
+
+@media (max-width: 480px) {
+  .dayhead h2 { font-size: 23px; }
+  .tab .d { font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="top">
+    <div class="eyebrow mono" id="eyebrow"></div>
+    <h1>Nedeljni plan</h1>
+    <div class="overall">
+      <div class="row"><span class="count" id="count"></span><span class="hint" id="resetNote"></span></div>
+      <div class="meter" role="progressbar" aria-label="Urađeno ove nedelje" aria-valuemin="0" aria-valuemax="100" id="meter"><i id="fill"></i></div>
+    </div>
+  </header>
+
+  <div class="controls">
+    <div class="seg" role="group" aria-label="Prikaz">
+      <button type="button" data-act="mode" data-mode="day" aria-pressed="true">Dan</button>
+      <button type="button" data-act="mode" data-mode="week" aria-pressed="false">Nedelja</button>
+    </div>
+  </div>
+
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Dani u nedelji"></nav>
+  <section class="view" id="view" aria-live="polite"></section>
+
+  <form class="add" id="add" autocomplete="off">
+    <div class="line">
+      <input type="text" id="newText" maxlength="160" aria-label="Novi zadatak" placeholder="Novi zadatak">
+      <button type="submit">Dodaj</button>
+    </div>
+    <label class="once"><input type="checkbox" id="onceChk"> Samo ove nedelje</label>
+    <p class="hint" id="addHint">Bez te kvačice zadatak se ponavlja svake nedelje.</p>
+  </form>
+
+  <footer>
+    <div class="syncline"><span class="dot" id="dot"></span><span id="syncTxt"></span></div>
+    <button type="button" class="ghost" id="resetBtn" data-act="reset">Poništi sve štikle</button>
+  </footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var DAYS = [
+    { k: 'mon', s: 'Pon', n: 'Ponedeljak' },
+    { k: 'tue', s: 'Uto', n: 'Utorak' },
+    { k: 'wed', s: 'Sre', n: 'Sreda' },
+    { k: 'thu', s: 'Čet', n: 'Četvrtak' },
+    { k: 'fri', s: 'Pet', n: 'Petak' },
+    { k: 'sat', s: 'Sub', n: 'Subota' },
+    { k: 'sun', s: 'Ned', n: 'Nedelja' }
+  ];
+  var MON = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'avg', 'sep', 'okt', 'nov', 'dec'];
+
+  function mk(k, arr) { return arr.map(function (t, i) { return { id: k + '-' + (i + 1), t: t }; }); }
+  var DEFAULT = { days: {
+    mon: mk('mon', ['Fakultet: predavanja i vežbe', 'Fullstack projekat (2h)', 'Napisati plan za nedelju']),
+    tue: mk('tue', ['Fakultet: predavanja i vežbe', 'Fullstack projekat (2h)', 'Vežbanje']),
+    wed: mk('wed', ['Fakultet: predavanja i vežbe', 'Fullstack projekat (2h)', 'Frilens: portfolio ili ponude']),
+    thu: mk('thu', ['Fakultet: predavanja i vežbe', 'Fullstack projekat (2h)', 'Vežbanje']),
+    fri: mk('fri', ['Fakultet: predavanja i vežbe', 'Fullstack projekat (2h)', 'Pregled nedelje']),
+    sat: mk('sat', ['Duži blok kodiranja (3h)', 'Vežbanje', 'Kućni poslovi']),
+    sun: mk('sun', ['Odmor', 'Priprema za sledeću nedelju'])
+  } };
+
+  var CHECK = '<svg viewBox="0 0 16 16" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5"/></svg>';
+  var TRASH = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 002 2h6a2 2 0 002-2l1-12M9 7V4h6v3"/></svg>';
+
+  function $(s) { return document.querySelector(s); }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  var ls = {
+    get: function (k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
+    set: function (k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  };
+
+  /* ---- week math (ISO week, Monday start, local time) ---- */
+  function weekInfo(d) {
+    var date = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    var idx = (date.getDay() + 6) % 7;
+    var mon = new Date(date); mon.setDate(date.getDate() - idx);
+    var thu = new Date(mon); thu.setDate(mon.getDate() + 3);
+    var y = thu.getFullYear();
+    var jan4 = new Date(y, 0, 4);
+    var w1 = new Date(jan4); w1.setDate(jan4.getDate() - ((jan4.getDay() + 6) % 7));
+    var wk = Math.round((mon - w1) / (7 * 864e5)) + 1;
+    return { key: y + '-W' + (wk < 10 ? '0' + wk : wk), wk: wk, mon: mon, idx: idx };
+  }
+  function fmt(d) { return d.getDate() + '. ' + MON[d.getMonth()]; }
+  function dayKeyOf(d) { return DAYS[(d.getDay() + 6) % 7].k; }
+
+  /* ---- state ---- */
+  var wi = weekInfo(new Date());
+  var today = dayKeyOf(new Date());
+  var template = ls.get('np:template');
+  var week = normWeek(ls.get('np:week:' + wi.key));
+  var sel = today;
+  var mode = 'day';
+  var edit = false;
+  var confirming = false;
+  var confirmTimer = null;
+
+  function normWeek(o) { return { done: (o && o.done) || {}, once: (o && o.once) || {} }; }
+  function tpl() { return template || DEFAULT; }
+  function ensureTpl() {
+    if (!template) template = clone(DEFAULT);
+    if (!template.days) template.days = {};
+    return template;
+  }
+  function tasksFor(k) {
+    var a = ((tpl().days && tpl().days[k]) || []).map(function (t) { return { id: t.id, t: t.t, once: false }; });
+    var b = (week.once[k] || []).map(function (t) { return { id: t.id, t: t.t, once: true }; });
+    return a.concat(b);
+  }
+  function stats(k) {
+    var ts = tasksFor(k), d = 0;
+    ts.forEach(function (t) { if (week.done[t.id]) d++; });
+    return { n: ts.length, d: d };
+  }
+  function newId() { return 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+
+  /* ---- persistence: cloud (db, per user) with local mirror ---- */
+  var sync = { coll: null, uT: null, uW: null, subKey: null, dirty: { t: false, w: false }, busy: { t: false, w: false }, timer: {} };
+
+  function setStatus(s) {
+    var txt = {
+      local: 'Čuva se na ovom uređaju.',
+      connecting: 'Povezivanje…',
+      saving: 'Čuvam…',
+      ok: 'Sinhronizovano. Otvori isti link na bilo kom uređaju.',
+      err: 'Čuvanje nije uspelo. Pokušaj ponovo.'
+    }[s];
+    $('#syncTxt').textContent = txt;
+    $('#dot').className = 'dot' + (s === 'ok' ? ' ok' : s === 'err' ? ' err' : '');
+  }
+  function settle() { if (sync.coll && !sync.dirty.t && !sync.dirty.w && !sync.busy.t && !sync.busy.w) setStatus('ok'); }
+
+  function save(which) {
+    if (which === 't') ls.set('np:template', template); else ls.set('np:week:' + wi.key, week);
+    if (!sync.coll) return;
+    sync.dirty[which] = true;
+    clearTimeout(sync.timer[which]);
+    sync.timer[which] = setTimeout(function () { flush(which); }, 350);
+    setStatus('saving');
+  }
+  function flush(which) {
+    if (sync.busy[which]) { sync.timer[which] = setTimeout(function () { flush(which); }, 200); return; }
+    sync.busy[which] = true;
+    sync.dirty[which] = false;
+    var ref = which === 't' ? sync.coll.doc('template') : sync.coll.doc('week-' + wi.key);
+    var body = which === 't' ? clone(template) : clone(week);
+    ref.set(body).then(function () {
+      sync.busy[which] = false;
+      settle();
+    }, function () {
+      sync.busy[which] = false;
+      sync.dirty[which] = true;
+      setStatus('err');
+    });
+  }
+
+  function subTemplate() {
+    if (sync.uT) sync.uT();
+    sync.uT = sync.coll.doc('template').onSnapshot(function (s) {
+      if (sync.dirty.t || sync.busy.t) return;
+      if (s.exists) {
+        template = clone(s.data());
+        ls.set('np:template', template);
+      } else if (!s.metadata.fromCache && template) {
+        save('t');
+      }
+      remoteRender();
+      settle();
+    }, function () { setStatus('err'); });
+  }
+  function subWeek() {
+    if (sync.uW) sync.uW();
+    sync.subKey = wi.key;
+    sync.uW = sync.coll.doc('week-' + wi.key).onSnapshot(function (s) {
+      if (sync.dirty.w || sync.busy.w) return;
+      if (s.exists) {
+        week = normWeek(clone(s.data()));
+        ls.set('np:week:' + wi.key, week);
+      } else if (!s.metadata.fromCache && (Object.keys(week.done).length || Object.keys(week.once).length)) {
+        save('w');
+      }
+      remoteRender();
+      settle();
+    }, function () { setStatus('err'); });
+  }
+
+  /* ---- mutations ---- */
+  function toggle(id) {
+    if (week.done[id]) delete week.done[id]; else week.done[id] = true;
+    save('w'); render();
+  }
+  function addTask(day, text, once) {
+    var t = { id: newId(), t: text };
+    if (once) {
+      if (!week.once[day]) week.once[day] = [];
+      week.once[day].push(t);
+      save('w');
+    } else {
+      ensureTpl();
+      if (!template.days[day]) template.days[day] = [];
+      template.days[day].push(t);
+      save('t');
+    }
+    render();
+  }
+  function delTask(day, id, once) {
+    if (once) {
+      week.once[day] = (week.once[day] || []).filter(function (t) { return t.id !== id; });
+    } else {
+      ensureTpl();
+      template.days[day] = (template.days[day] || []).filter(function (t) { return t.id !== id; });
+      save('t');
+    }
+    delete week.done[id];
+    save('w'); render();
+  }
+  function renameTask(day, id, once, val) {
+    val = val.trim();
+    if (!val) { render(); return; }
+    var list;
+    if (once) list = week.once[day] || [];
+    else { ensureTpl(); list = template.days[day] || []; }
+    var changed = false;
+    list.forEach(function (t) { if (t.id === id && t.t !== val) { t.t = val; changed = true; } });
+    if (changed) save(once ? 'w' : 't');
+    render();
+  }
+
+  /* ---- rendering ---- */
+  function taskRow(t, k) {
+    var done = !!week.done[t.id];
+    if (edit && mode === 'day') {
+      return '<li class="task edit"><input class="rename" type="text" maxlength="160" value="' + esc(t.t) + '" aria-label="Naziv zadatka" data-id="' + esc(t.id) + '" data-day="' + k + '" data-once="' + (t.once ? 1 : 0) + '">' +
+        '<button type="button" class="del" data-act="del" data-id="' + esc(t.id) + '" data-day="' + k + '" data-once="' + (t.once ? 1 : 0) + '" aria-label="Obriši zadatak">' + TRASH + '</button></li>';
+    }
+    return '<li class="task' + (done ? ' done' : '') + '"><label><input type="checkbox" data-id="' + esc(t.id) + '"' + (done ? ' checked' : '') + '>' +
+      '<span class="box">' + CHECK + '</span><span class="txt">' + esc(t.t) + '</span>' +
+      (t.once ? '<span class="tag">ove nedelje</span>' : '') + '</label></li>';
+  }
+  function listHtml(k) {
+    var ts = tasksFor(k);
+    if (!ts.length) return '<p class="empty">Za ovaj dan nema zadataka. Dodaj prvi ispod.</p>';
+    return '<ul class="tasks">' + ts.map(function (t) { return taskRow(t, k); }).join('') + '</ul>';
+  }
+
+  function renderHeader() {
+    var end = new Date(wi.mon); end.setDate(wi.mon.getDate() + 6);
+    $('#eyebrow').textContent = 'Nedelja ' + wi.wk + ' · ' + fmt(wi.mon) + ' – ' + fmt(end);
+    var n = 0, d = 0;
+    DAYS.forEach(function (x) { var s = stats(x.k); n += s.n; d += s.d; });
+    var pct = n ? Math.round(d / n * 100) : 0;
+    $('#count').textContent = d + ' od ' + n + ' urađeno';
+    $('#fill').style.width = pct + '%';
+    $('#meter').setAttribute('aria-valuenow', String(pct));
+    var left = 7 - wi.idx;
+    $('#resetNote').textContent = 'Nova nedelja počinje ' + (left === 1 ? 'sutra' : 'za ' + left + ' dana') + ', sve štikle se tada brišu.';
+  }
+  function renderTabs() {
+    var nav = $('#tabs');
+    nav.hidden = mode !== 'day';
+    nav.innerHTML = DAYS.map(function (d) {
+      var s = stats(d.k);
+      var cls = 'tab' + (d.k === today ? ' today' : '') + (s.n && s.d === s.n ? ' alldone' : '');
+      return '<button type="button" role="tab" class="' + cls + '" aria-selected="' + (d.k === sel) + '" data-act="tab" data-day="' + d.k + '">' +
+        '<span class="d">' + d.s + '</span><span class="c">' + (s.n ? s.d + '/' + s.n : '–') + '</span></button>';
+    }).join('');
+  }
+  function renderView() {
+    var v = $('#view');
+    if (mode === 'day') {
+      var d = DAYS.filter(function (x) { return x.k === sel; })[0];
+      var date = new Date(wi.mon); date.setDate(wi.mon.getDate() + DAYS.indexOf(d));
+      v.innerHTML = '<div class="panel"><div class="dayhead"><h2>' + d.n + '</h2><span class="mono date">' + fmt(date) + '</span>' +
+        (d.k === today ? '<span class="pill">Danas</span>' : '') +
+        '<button type="button" class="ghost" data-act="edit" aria-pressed="' + edit + '">' + (edit ? 'Gotovo' : 'Uredi') + '</button></div>' +
+        listHtml(d.k) + '</div>';
+      $('#newText').placeholder = 'Novi zadatak za ' + d.n.toLowerCase();
+    } else {
+      v.innerHTML = '<div class="grid">' + DAYS.map(function (d) {
+        var s = stats(d.k);
+        return '<article class="card' + (d.k === today ? ' today' : '') + '"><button type="button" class="cardhead" data-act="open-day" data-day="' + d.k + '">' +
+          '<span class="cn">' + d.n + '</span><span class="mono">' + (s.n ? s.d + '/' + s.n : '–') + '</span></button>' + listHtml(d.k) + '</article>';
+      }).join('') + '</div>';
+    }
+    $('#add').hidden = mode !== 'day';
+    Array.prototype.forEach.call(document.querySelectorAll('[data-act="mode"]'), function (b) {
+      b.setAttribute('aria-pressed', String(b.dataset.mode === mode));
+    });
+  }
+  function renderFooter() {
+    var b = $('#resetBtn');
+    b.textContent = confirming ? 'Potvrdi poništavanje' : 'Poništi sve štikle';
+    b.className = 'ghost' + (confirming ? ' danger' : '');
+  }
+  function render() {
+    var a = document.activeElement, keep = null;
+    if (a && a.dataset && a.dataset.id) keep = { id: a.dataset.id, r: a.classList.contains('rename') };
+    renderHeader(); renderTabs(); renderView(); renderFooter();
+    if (keep) {
+      var sel2 = keep.r ? 'input.rename' : 'input[type="checkbox"]';
+      var el = document.querySelector(sel2 + '[data-id="' + (window.CSS && CSS.escape ? CSS.escape(keep.id) : keep.id) + '"]');
+      if (el) el.focus({ preventScroll: true });
+    }
+  }
+  function remoteRender() {
+    var a = document.activeElement;
+    if (a && a.classList && a.classList.contains('rename')) return;
+    render();
+  }
+
+  /* ---- events ---- */
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-act]');
+    if (!b) return;
+    var act = b.dataset.act;
+    if (act === 'tab') { sel = b.dataset.day; edit = false; render(); }
+    else if (act === 'mode') { mode = b.dataset.mode; edit = false; render(); }
+    else if (act === 'open-day') { sel = b.dataset.day; mode = 'day'; edit = false; render(); window.scrollTo(0, 0); }
+    else if (act === 'edit') { edit = !edit; render(); }
+    else if (act === 'del') { delTask(b.dataset.day, b.dataset.id, b.dataset.once === '1'); }
+    else if (act === 'reset') {
+      if (!confirming) {
+        confirming = true; renderFooter();
+        confirmTimer = setTimeout(function () { confirming = false; renderFooter(); }, 4000);
+      } else {
+        clearTimeout(confirmTimer); confirming = false;
+        week.done = {}; save('w'); render();
+      }
+    }
+  });
+  document.addEventListener('change', function (e) {
+    var t = e.target;
+    if (t.matches && t.matches('input[type="checkbox"][data-id]')) toggle(t.dataset.id);
+    else if (t.matches && t.matches('input.rename')) renameTask(t.dataset.day, t.dataset.id, t.dataset.once === '1', t.value);
+  });
+  $('#add').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var inp = $('#newText'), text = inp.value.trim();
+    if (!text) { inp.focus(); return; }
+    addTask(sel, text, $('#onceChk').checked);
+    inp.value = '';
+    inp.focus();
+  });
+
+  /* ---- week rollover: new week key means a fresh, unchecked list ---- */
+  function tick() {
+    var now = new Date(), nw = weekInfo(now), td = dayKeyOf(now), changed = false;
+    if (nw.key !== wi.key) {
+      wi = nw;
+      week = normWeek(ls.get('np:week:' + wi.key));
+      sel = td; changed = true;
+      if (sync.coll) subWeek();
+    }
+    if (td !== today) { today = td; changed = true; }
+    if (changed) render();
+  }
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) tick(); });
+  window.addEventListener('focus', tick);
+  setInterval(tick, 60000);
+
+  /* ---- start: render at once from local data, then connect the account store ---- */
+  render();
+  setStatus('local');
+  (function connect() {
+    if (!window.claude || !window.claude.use) return;
+    setStatus('connecting');
+    Promise.all([window.claude.use('db'), window.claude.use('user')]).then(function (r) {
+      var db = r[0], user = r[1];
+      if (!db || !user) { setStatus('local'); return null; }
+      return user.id().then(function (uid) {
+        if (!uid) { setStatus('local'); return; }
+        sync.coll = db.collection('data/users/' + uid);
+        subTemplate();
+        subWeek();
+      });
+    }).catch(function () { setStatus('local'); });
+  })();
+})();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+NEDELJNI PLAN - instalacija na telefon (2 minuta)
+
+1. Otvori https://app.netlify.com/drop na racunaru i prevuci CEO folder "nedeljni-plan" na stranicu.
+   (Treba besplatan nalog, a prijava ide preko Google-a.)
+2. Netlify ti da link, npr. neko-ime.netlify.app. Otvori ga na telefonu.
+3. Android (Chrome): meni (tri tacke) -> "Instaliraj aplikaciju" / "Dodaj na pocetni ekran".
+   iPhone (Safari): dugme Podeli -> "Dodaj na pocetni ekran".
+4. Gotovo. Radi i bez interneta. Lista se sama resetuje svakog ponedeljka.
+
+Napomena: podaci se cuvaju na tom uredjaju, pa telefon i racunar nemaju zajednicku listu.
