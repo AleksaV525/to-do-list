@@ -1,10 +1,26 @@
-NEDELJNI PLAN - instalacija na telefon (2 minuta)
+TO-DO - instalacija na telefon
 
-1. Otvori https://app.netlify.com/drop na racunaru i prevuci CEO folder "nedeljni-plan" na stranicu.
-   (Treba besplatan nalog, a prijava ide preko Google-a.)
-2. Netlify ti da link, npr. neko-ime.netlify.app. Otvori ga na telefonu.
-3. Android (Chrome): meni (tri tacke) -> "Instaliraj aplikaciju" / "Dodaj na pocetni ekran".
-   iPhone (Safari): dugme Podeli -> "Dodaj na pocetni ekran".
-4. Gotovo. Radi i bez interneta. Lista se sama resetuje svakog ponedeljka.
+GitHub Pages (ako vec imas repozitorijum sa prethodnom verzijom):
+1. Otvori repozitorijum na github.com -> Add file -> Upload files.
+2. Prevuci SADRZAJ ovog foldera (index.html, sw.js, manifest.webmanifest i sve .png), ne sam folder.
+   GitHub ce zameniti stare fajlove. Klikni Commit changes.
+3. Posle minut-dva otvori isti link. Nova verzija se ucita pri drugom otvaranju.
+   Ako je stara aplikacija vec na pocetnom ekranu, obrisi je i instaliraj ponovo da dobije novo ime i ikonicu.
 
-Napomena: podaci se cuvaju na tom uredjaju, pa telefon i racunar nemaju zajednicku listu.
+Novi repozitorijum:
+1. New repository -> Public -> Create.
+2. Uploading an existing file -> prevuci sadrzaj foldera -> Commit.
+3. Settings -> Pages -> Branch: main, folder: / (root) -> Save.
+4. Link je https://TVOJE-IME.github.io/NAZIV-REPOZITORIJUMA/
+
+Instalacija:
+Android (Chrome): meni -> Instaliraj aplikaciju.
+iPhone (Safari): Podeli -> Dodaj na pocetni ekran.
+
+Napomene:
+- Podaci su samo na tom uredjaju. U Podesavanjima postoji "Preuzmi" kopiju i "Vrati iz fajla".
+- Zadaci iz stare verzije (Meridian) se prenose automatski ako je otvoris na istom linku. Primeri se brisu.
+- Podsetnici stizu dok je aplikacija otvorena ili u pozadini. Kad je potpuno zatvorena, nema servera koji bi ih poslao.
+- Brzo dodavanje: "Sastanak petak 14:30-15:30 #Posao p1 @hitno" ili "Trening svake nedelje 18:00 1h"
+  p1 hitno, p2 visok, p3 srednji, p4 nizak.
+- Raspored: Dan (satnica, prevuci blok za pomeranje, povuci donju ivicu za trajanje), Nedelja, Mesec.

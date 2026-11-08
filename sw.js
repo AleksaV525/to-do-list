@@ -1,4 +1,4 @@
-var CACHE = 'nedeljni-plan-v1';
+var CACHE = 'todo-v2';
 var FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 self.addEventListener('install', function (e) {
   e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(FILES); }));
@@ -14,9 +14,16 @@ self.addEventListener('fetch', function (e) {
   if (e.request.method !== 'GET') return;
   e.respondWith(caches.match(e.request).then(function (hit) {
     var net = fetch(e.request).then(function (res) {
-      if (res && res.status === 200) { var copy = res.clone(); caches.open(CACHE).then(function (c) { c.put(e.request, copy); }); }
+      if (res && (res.status === 200 || res.type === 'opaque')) {
+        var copy = res.clone();
+        caches.open(CACHE).then(function (c) { c.put(e.request, copy); });
+      }
       return res;
     }).catch(function () { return hit; });
     return hit || net;
   }));
+});
+self.addEventListener('notificationclick', function (e) {
+  e.notification.close();
+  e.waitUntil(self.clients.matchAll({ type: 'window' }).then(function (cs) { return cs.length ? cs[0].focus() : self.clients.openWindow('./'); }));
 });
